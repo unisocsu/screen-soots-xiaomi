@@ -1,26 +1,42 @@
-name: Download and Zip on Push 🚀
+name: Download and Check File 🚀
 
 on:
   push:
     branches:
-      - main # תוכל לשנות את שם הענף במידת הצורך (למשל master)
+      - main
 
 jobs:
   download-and-pack:
     runs-on: ubuntu-latest
+    env:
+      # 🔗 הדבק כאן את הקישור הישיר לקובץ שלך
+      DOWNLOAD_URL: "https://apkcube.com/hill-climb-racing/com.fingersoft.hillclimb/download"
+
     steps:
-      - name: הורדת הקובץ מהקישור שהוגדר מראש 📥
+      - name: הורדת הקובץ ובדיקת תקינות 📥
         run: |
-          # 🔗 הדבק כאן למטה את הקישור שלך בין המרכאות לפני ה-Push!
-          DOWNLOAD_URL="https://apkcube.com/hill-climb-racing/com.fingersoft.hillclimb/download"
+          FILENAME=$(basename "${DOWNLOAD_URL%%\?*}")
+          if [ -z "$FILENAME" ] || [ "$FILENAME" = "/" ]; then
+            FILENAME="downloaded_file"
+          fi
+          echo "FILENAME=$FILENAME" >> $GITHUB_ENV
           
-          echo "מתחיל בהורדת הקובץ אוטומטית..."
-          curl -L "$DOWNLOAD_URL" -o downloaded_file
+          echo "מוריד את הקישור..."
+          curl -L -o "$FILENAME" "$DOWNLOAD_URL"
+          
+          echo "--- מידע על הקובץ שהורד ---"
+          ls -lh "$FILENAME"
+          
+          # אם הקובץ קטן מ-50KB, סביר להניח שזה דף HTML או הודעת שגיאה ולא הקובץ עצמו
+          FILESIZE=$(stat -c%s "$FILENAME")
+          if [ "$FILESIZE" -lt 50000 ]; then
+            echo "⚠️ אזהרה: הקובץ קטן מאוד! הנה התוכן שלו כדי שנבין מה ירד:"
+            cat "$FILENAME"
+          fi
 
       - name: דחיסת הקובץ לתוך ZIP 🗜️
         run: |
-          # אריזת הקובץ לארכיון
-          zip compressed_archive.zip downloaded_file
+          zip compressed_archive.zip "$FILENAME"
 
       - name: העלאת הארטיפקט 🚀
         uses: actions/upload-artifact@v4
