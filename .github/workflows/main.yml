@@ -9,7 +9,7 @@ jobs:
   download-and-pack:
     runs-on: ubuntu-latest
     env:
-      # 🔗 הדבק כאן את הקישור שלך (למשל הקישור לאפליקציה מ-apkcube)
+      # 🔗 הדבק כאן את הקישור שלך
       DOWNLOAD_URL: "הדבק_כאן_את_הקישור_שלך"
 
     steps:
@@ -18,8 +18,8 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: התקנת ספריית מעקף הגנות 📦
-        run: pip install curl_cffi
+      - name: התקנת ספריות נדרשות ומעקף הגנות 📦
+        run: pip install typing_extensions curl_cffi
 
       - name: הורדת הקובץ דרך הדמיית דפדפן 📥
         run: |
@@ -30,10 +30,8 @@ jobs:
           url = os.environ['DOWNLOAD_URL']
           print(f'מתחיל הורדה מתוך: {url}')
           
-          # בקשת HTTP שמדמה דפדפן כרום אמיתי כדי לעקוף את Cloudflare
           response = requests.get(url, impersonate='chrome', timeout=60)
           
-          # זיהוי או חילוץ שם קובץ חכם
           filename = 'downloaded_file.apk'
           if 'content-disposition' in response.headers:
               cd = response.headers['content-disposition']
@@ -50,7 +48,6 @@ jobs:
         run: |
           python -c "
           import glob, zipfile, os
-          # מוצא את הקובץ החדש שירד (שאינו קובץ ה-YAML או הזיפ)
           files = [f for f in glob.glob('*') if f not in ['.github', 'compressed_archive.zip']]
           if files:
               target = max(files, key=os.path.getsize)
