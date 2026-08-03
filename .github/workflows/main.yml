@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       # 🔗 הדבק כאן את הקישור שלך
-      DOWNLOAD_URL: "https://apkcube.com/hill-climb-racing/com.fingersoft.hillclimb/download"
+      DOWNLOAD_URL: "https://data.winudf.com/APK/Y29tLnpoaWxpYW9hcHAubXVzaWNhbGx5LmdvXzQ0MDkwMl8zNGI1NDI4Yg?_p=Y29tLnpoaWxpYW9hcHAubXVzaWNhbGx5Lmdv&download_id=1965307483939398&filename=TikTok+Lite+-+Faster+TikTok_44.9.2_APKPure.apk&full_size=85501098&is_hot=true&k=bfcef869d110d1e4226bd7c2d2cd9acf6a72f576&package_name=com.zhiliaoapp.musically.go&source=web&token=1785746038-45b4e31aed-0-69edded298e95986263ff7dcf5729614"
 
     steps:
       - name: הגדרת סביבת Python 🐍
