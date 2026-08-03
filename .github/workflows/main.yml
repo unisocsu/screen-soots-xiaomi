@@ -1,4 +1,4 @@
-name: Download and Check File 🚀
+name: Download Cloudflare Protected File 🚀
 
 on:
   push:
@@ -9,34 +9,55 @@ jobs:
   download-and-pack:
     runs-on: ubuntu-latest
     env:
-      # 🔗 הדבק כאן את הקישור הישיר לקובץ שלך
-      DOWNLOAD_URL: "https://apkcube.com/hill-climb-racing/com.fingersoft.hillclimb/download"
+      # 🔗 הדבק כאן את הקישור שלך (למשל הקישור לאפליקציה מ-apkcube)
+      DOWNLOAD_URL: "הדבק_כאן_את_הקישור_שלך"
 
     steps:
-      - name: הורדת הקובץ ובדיקת תקינות 📥
+      - name: הגדרת סביבת Python 🐍
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: התקנת ספריית מעקף הגנות 📦
+        run: pip install curl_cffi
+
+      - name: הורדת הקובץ דרך הדמיית דפדפן 📥
         run: |
-          FILENAME=$(basename "${DOWNLOAD_URL%%\?*}")
-          if [ -z "$FILENAME" ] || [ "$FILENAME" = "/" ]; then
-            FILENAME="downloaded_file"
-          fi
-          echo "FILENAME=$FILENAME" >> $GITHUB_ENV
+          python -c "
+          from curl_cffi import requests
+          import os
           
-          echo "מוריד את הקישור..."
-          curl -L -o "$FILENAME" "$DOWNLOAD_URL"
+          url = os.environ['DOWNLOAD_URL']
+          print(f'מתחיל הורדה מתוך: {url}')
           
-          echo "--- מידע על הקובץ שהורד ---"
-          ls -lh "$FILENAME"
+          # בקשת HTTP שמדמה דפדפן כרום אמיתי כדי לעקוף את Cloudflare
+          response = requests.get(url, impersonate='chrome', timeout=60)
           
-          # אם הקובץ קטן מ-50KB, סביר להניח שזה דף HTML או הודעת שגיאה ולא הקובץ עצמו
-          FILESIZE=$(stat -c%s "$FILENAME")
-          if [ "$FILESIZE" -lt 50000 ]; then
-            echo "⚠️ אזהרה: הקובץ קטן מאוד! הנה התוכן שלו כדי שנבין מה ירד:"
-            cat "$FILENAME"
-          fi
+          # זיהוי או חילוץ שם קובץ חכם
+          filename = 'downloaded_file.apk'
+          if 'content-disposition' in response.headers:
+              cd = response.headers['content-disposition']
+              if 'filename=' in cd:
+                  filename = cd.split('filename=')[-1].strip('\"\'')
+          
+          print(f'שומר את הקובץ בשם: {filename} (גודל: {len(response.content)} בייטים)')
+          
+          with open(filename, 'wb') as f:
+              f.write(response.content)
+          "
 
       - name: דחיסת הקובץ לתוך ZIP 🗜️
         run: |
-          zip compressed_archive.zip "$FILENAME"
+          python -c "
+          import glob, zipfile, os
+          # מוצא את הקובץ החדש שירד (שאינו קובץ ה-YAML או הזיפ)
+          files = [f for f in glob.glob('*') if f not in ['.github', 'compressed_archive.zip']]
+          if files:
+              target = max(files, key=os.path.getsize)
+              print(f'דוחס את הקובץ: {target}')
+              with zipfile.ZipFile('compressed_archive.zip', 'w', zipfile.ZIP_DEFLATED) as zf:
+                  zf.write(target)
+          "
 
       - name: העלאת הארטיפקט 🚀
         uses: actions/upload-artifact@v4
