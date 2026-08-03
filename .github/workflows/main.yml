@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       # 🔗 הדבק כאן את הקישור שלך
-      DOWNLOAD_URL: "https://data.winudf.com/APK/Y29tLnpoaWxpYW9hcHAubXVzaWNhbGx5LmdvXzQ0MDkwMl8zNGI1NDI4Yg?_p=Y29tLnpoaWxpYW9hcHAubXVzaWNhbGx5Lmdv&download_id=1965307483939398&filename=TikTok+Lite+-+Faster+TikTok_44.9.2_APKPure.apk&full_size=85501098&is_hot=true&k=bfcef869d110d1e4226bd7c2d2cd9acf6a72f576&package_name=com.zhiliaoapp.musically.go&source=web&token=1785746038-45b4e31aed-0-69edded298e95986263ff7dcf5729614"
+      DOWNLOAD_URL: "https://data.winudf.com/APK/Y29tLmprYXJkZXYuYWRid2lyZWxlc3NfMjEwXzVjYmFiNjZj?_p=Y29tLmprYXJkZXYuYWRid2lyZWxlc3M%3D&download_id=1297707032038519&filename=adb+wireless+%28root+or+no-root%29_2.1.0_APKPure.apk&full_size=2470188&is_hot=false&k=af75268e16806eb1ff76037f37a880746a72f710&package_name=com.jkardev.adbwireless&source=web&token=1785746448-5cabf9f671-0-21b69ad7a9808e6255a7713993a12baa"
 
     steps:
       - name: הגדרת סביבת Python 🐍
