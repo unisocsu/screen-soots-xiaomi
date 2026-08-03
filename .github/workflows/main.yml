@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       # 🔗 הדבק כאן את הקישור שלך
-      DOWNLOAD_URL: "הדבק_כאן_את_הקישור_שלך"
+      DOWNLOAD_URL: "https://apkcube.com/hill-climb-racing/com.fingersoft.hillclimb/download"
 
     steps:
       - name: הגדרת סביבת Python 🐍
