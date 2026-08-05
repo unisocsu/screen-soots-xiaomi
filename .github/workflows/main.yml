@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       # 🔗 הדבק כאן את הקישור שלך
-      DOWNLOAD_URL: "https://data.winudf.com/XAPK/Y29tLndoYXRzYXBwLnc0Yl8yNjI5MDczMTJfZmZmYzM1Njk?_p=Y29tLndoYXRzYXBwLnc0Yg%3D%3D&download_id=1119501165630874&filename=WhatsApp+Business_2.26.29.73_APKPure.xapk&full_size=103229775&is_hot=true&k=e6f8fdf163068bbcbaca019d3395ab856a75ce82&package_name=com.whatsapp.w4b&source=web&token=1785932674-3452ec5bc3-0-dd71011f8be5fa8b003dd7ef7b071bf9"
+      DOWNLOAD_URL: "https://apkpure.com/beach-buggy-racing-2/com.vectorunit.cobalt.googleplay/download"
 
     steps:
       - name: הגדרת סביבת Python 🐍
