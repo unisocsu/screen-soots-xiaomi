@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       # 🔗 הדבק כאן את הקישור שלך
-      DOWNLOAD_URL: "https://data.winudf.com/APK/Y29tLmFscGhhaW52ZW50b3IuZmlsZW1hbmFnZXJfMjEwMzA4Ml85MzQyODM0Mg?_p=Y29tLmFscGhhaW52ZW50b3IuZmlsZW1hbmFnZXI%3D&download_id=1933704141668948&filename=File+Manager_3.8.2_APKPure.apk&full_size=13468694&is_hot=true&k=336cedd58d0c87e792eefe7b117463326a737b52&package_name=com.alphainventor.filemanager&source=web&token=1785780306-2b3207d310-0-6b8beaa41ea9c49c6c5226f200449f42"
+      DOWNLOAD_URL: "https://data.winudf.com/XAPK/Y29tLndoYXRzYXBwLnc0Yl8yNjI5MDczMTJfZmZmYzM1Njk?_p=Y29tLndoYXRzYXBwLnc0Yg%3D%3D&download_id=1119501165630874&filename=WhatsApp+Business_2.26.29.73_APKPure.xapk&full_size=103229775&is_hot=true&k=e6f8fdf163068bbcbaca019d3395ab856a75ce82&package_name=com.whatsapp.w4b&source=web&token=1785932674-3452ec5bc3-0-dd71011f8be5fa8b003dd7ef7b071bf9"
 
     steps:
       - name: הגדרת סביבת Python 🐍
