@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       # 🔗 הדבק כאן את הקישור שלך
-      DOWNLOAD_URL: "https://apkpure.com/beach-buggy-racing-2/com.vectorunit.cobalt.googleplay/download"
+      DOWNLOAD_URL: "https://yer.dl.sourceforge.net/project/android-x86/Release%209.0/android-x86_64-9.0-r2.iso?viasf=1&fid=71956d7d14350eb6&e=1786387059&st=H6WqdrlhVtvtjOfVlASOIQ"
 
     steps:
       - name: הגדרת סביבת Python 🐍
