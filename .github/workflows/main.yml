@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       # 🔗 הדבק כאן את הקישור שלך
-      DOWNLOAD_URL: "https://yer.dl.sourceforge.net/project/android-x86/Release%209.0/android-x86_64-9.0-r2.iso?viasf=1&fid=71956d7d14350eb6&e=1786387059&st=H6WqdrlhVtvtjOfVlASOIQ"
+      DOWNLOAD_URL: "https://eb5e7388c3df147b74dd2379b7cf8323.r2.cloudflarestorage.com/downloadprod/wp-content/uploads/2016/12/5851cbc9d659d/com.howie.gserverinstall_4.4.2-442_minAPI19%28nodpi%29_apkmirror.com.apk?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=72a5ba3a0b8a601e535d5525f12f8177%2F20260901%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260901T203403Z&X-Amz-SignedHeaders=host&X-Amz-Expires=3600&X-Amz-Signature=94c88b31d9afe801cac2e79f4065f00c9ea251d1d69c0e75488ee4d37768710a"
 
     steps:
       - name: הגדרת סביבת Python 🐍
