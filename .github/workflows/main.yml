@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       # 🔗 הדבק כאן את הקישור שלך
-      DOWNLOAD_URL: "https://yer.dl.sourceforge.net/project/opengapps/arm/20220215/open_gapps-arm-4.4-pico-20220215.zip?viasf=1&fid=3e94d6a36a91f84f&e=1788413219&st=JwvLjXIdsxhoJbpKuIsdmw"
+      DOWNLOAD_URL: "https://mitmachim.top/assets/uploads/files/1790179227303-45839199-25cf-4ab4-8e32-d582f15525ba-image.jpeg"
 
     steps:
       - name: הגדרת סביבת Python 🐍
