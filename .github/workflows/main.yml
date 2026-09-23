@@ -1,16 +1,16 @@
 name: Download Cloudflare Protected File 🚀
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+    inputs:
+      download_url:
+        description: 'הזן את כתובת ה-URL להורדה'
+        required: true
+        type: string
 
 jobs:
   download-and-pack:
     runs-on: ubuntu-latest
-    env:
-      # 🔗 הדבק כאן את הקישור שלך
-      DOWNLOAD_URL: "https://mitmachim.top/assets/uploads/files/1790179227303-45839199-25cf-4ab4-8e32-d582f15525ba-image.jpeg"
 
     steps:
       - name: הגדרת סביבת Python 🐍
@@ -18,43 +18,81 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: התקנת ספריות נדרשות ומעקף הגנות 📦
-        run: pip install typing_extensions curl_cffi
+      - name: התקנת ספריות נדרשות 📦
+        run: |
+          pip install typing_extensions curl_cffi
 
       - name: הורדת הקובץ דרך הדמיית דפדפן 📥
+        env:
+          DOWNLOAD_URL: ${{ inputs.download_url }}
         run: |
           python -c "
           from curl_cffi import requests
           import os
-          
+          import urllib.parse
+
           url = os.environ['DOWNLOAD_URL']
           print(f'מתחיל הורדה מתוך: {url}')
-          
-          response = requests.get(url, impersonate='chrome', timeout=60)
-          
-          filename = 'downloaded_file.apk'
+
+          response = requests.get(
+              url,
+              impersonate='chrome',
+              timeout=60
+          )
+
+          response.raise_for_status()
+
+          filename = 'downloaded_file'
+
           if 'content-disposition' in response.headers:
               cd = response.headers['content-disposition']
               if 'filename=' in cd:
-                  filename = cd.split('filename=')[-1].strip('\"\'')
-          
-          print(f'שומר את הקובץ בשם: {filename} (גודל: {len(response.content)} בייטים)')
-          
+                  filename = cd.split('filename=')[-1].strip('\"\\'')
+
+          if filename == 'downloaded_file':
+              parsed = urllib.parse.urlparse(url)
+              path_name = os.path.basename(parsed.path)
+              if path_name:
+                  filename = path_name
+
+          print(f'שומר את הקובץ בשם: {filename}')
+          print(f'גודל: {len(response.content)} בייטים')
+
           with open(filename, 'wb') as f:
               f.write(response.content)
           "
 
       - name: דחיסת הקובץ לתוך ZIP 🗜️
         run: |
-          python -c "
-          import glob, zipfile, os
-          files = [f for f in glob.glob('*') if f not in ['.github', 'compressed_archive.zip']]
-          if files:
-              target = max(files, key=os.path.getsize)
-              print(f'דוחס את הקובץ: {target}')
-              with zipfile.ZipFile('compressed_archive.zip', 'w', zipfile.ZIP_DEFLATED) as zf:
-                  zf.write(target)
-          "
+          python - <<'PY'
+          import glob
+          import zipfile
+          import os
+
+          excluded = {
+              '.github',
+              'compressed_archive.zip'
+          }
+
+          files = [
+              f for f in glob.glob('*')
+              if f not in excluded and os.path.isfile(f)
+          ]
+
+          if not files:
+              raise SystemExit('לא נמצא קובץ לדחיסה')
+
+          target = max(files, key=os.path.getsize)
+
+          print(f'דוחס את הקובץ: {target}')
+
+          with zipfile.ZipFile(
+              'compressed_archive.zip',
+              'w',
+              zipfile.ZIP_DEFLATED
+          ) as zf:
+              zf.write(target, arcname=os.path.basename(target))
+          PY
 
       - name: העלאת הארטיפקט 🚀
         uses: actions/upload-artifact@v4
