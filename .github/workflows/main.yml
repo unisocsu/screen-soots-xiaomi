@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: write
+  actions: read
 
 jobs:
   download-and-pack:
@@ -28,6 +29,9 @@ jobs:
       - name: הורדת הקובץ דרך הדמיית דפדפן 📥
         env:
           DOWNLOAD_URL: ${{ inputs.download_url }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # אופציונלי: טוקן אישי (PAT) עם actions:read, לארטיפקטים ממאגר פרטי או ממאגר אחר
+          ARTIFACT_TOKEN: ${{ secrets.ARTIFACT_TOKEN }}
         run: |
           python - <<'PY'
           from curl_cffi import requests
@@ -36,14 +40,49 @@ jobs:
           from pathlib import Path
           import re
 
-          url = os.environ['DOWNLOAD_URL']
+          url = os.environ['DOWNLOAD_URL'].strip()
           print(f'מתחיל הורדה מתוך: {url}')
 
-          response = requests.get(
-              url,
-              impersonate='chrome',
-              timeout=120
+          default_name = 'downloaded_file'
+
+          # קישור לארטיפקט של GitHub Actions (קישור דפדפן) לא ניתן להורדה בלי הרשאה.
+          # לכן ממירים אותו לקריאת API עם טוקן.
+          art = re.match(
+              r'https://github\.com/([^/]+)/([^/]+)/actions/runs/\d+/artifacts/(\d+)',
+              url
           )
+
+          if art:
+              owner, repo, artifact_id = art.groups()
+              default_name = f'artifact-{artifact_id}.zip'
+              api_url = f'https://api.github.com/repos/{owner}/{repo}/actions/artifacts/{artifact_id}/zip'
+              token = os.environ.get('ARTIFACT_TOKEN') or os.environ.get('GITHUB_TOKEN')
+              print(f'זוהה ארטיפקט של GitHub, מוריד דרך ה-API: {api_url}')
+
+              r = requests.get(
+                  api_url,
+                  headers={
+                      'Authorization': f'Bearer {token}',
+                      'Accept': 'application/vnd.github+json',
+                      'X-GitHub-Api-Version': '2022-11-28',
+                  },
+                  allow_redirects=False,
+                  timeout=120
+              )
+              if r.status_code in (301, 302, 303, 307, 308):
+                  # הכתובת המופנית כבר חתומה - לא שולחים אליה את הטוקן
+                  url = r.headers['location']
+                  response = requests.get(url, impersonate='chrome', timeout=120)
+              else:
+                  response = r
+              if response.status_code == 404:
+                  print('404: הארטיפקט לא נמצא, פג תוקף, או שהמאגר פרטי. במקרה כזה הגדר secret בשם ARTIFACT_TOKEN.')
+          else:
+              response = requests.get(
+                  url,
+                  impersonate='chrome',
+                  timeout=120
+              )
           response.raise_for_status()
 
           filename = 'downloaded_file'
@@ -56,6 +95,9 @@ jobs:
               path_name = Path(urllib.parse.urlparse(url).path).name
               if path_name:
                   filename = path_name
+
+          if filename == 'downloaded_file':
+              filename = default_name
 
           # Keep only a safe filename; never allow directories from the server.
           filename = Path(filename.replace('\\', '/')).name
