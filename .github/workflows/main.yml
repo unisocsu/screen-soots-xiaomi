@@ -8,6 +8,9 @@ on:
         required: true
         type: string
 
+permissions:
+  contents: write
+
 jobs:
   download-and-pack:
     runs-on: ubuntu-latest
@@ -26,10 +29,12 @@ jobs:
         env:
           DOWNLOAD_URL: ${{ inputs.download_url }}
         run: |
-          python -c "
+          python - <<'PY'
           from curl_cffi import requests
           import os
           import urllib.parse
+          from pathlib import Path
+          import re
 
           url = os.environ['DOWNLOAD_URL']
           print(f'מתחיל הורדה מתוך: {url}')
@@ -37,65 +42,87 @@ jobs:
           response = requests.get(
               url,
               impersonate='chrome',
-              timeout=60
+              timeout=120
           )
-
           response.raise_for_status()
 
           filename = 'downloaded_file'
-
-          if 'content-disposition' in response.headers:
-              cd = response.headers['content-disposition']
-              if 'filename=' in cd:
-                  filename = cd.split('filename=')[-1].strip('\"\\'')
+          cd = response.headers.get('content-disposition', '')
+          match = re.search(r'filename\*?=(?:UTF-8\'\')?["\']?([^"\';]+)', cd, re.IGNORECASE)
+          if match:
+              filename = urllib.parse.unquote(match.group(1).strip())
 
           if filename == 'downloaded_file':
-              parsed = urllib.parse.urlparse(url)
-              path_name = os.path.basename(parsed.path)
+              path_name = Path(urllib.parse.urlparse(url).path).name
               if path_name:
                   filename = path_name
+
+          # Keep only a safe filename; never allow directories from the server.
+          filename = Path(filename.replace('\\', '/')).name
+          filename = re.sub(r'[^A-Za-z0-9._() -]', '_', filename).strip(' .')
+          if not filename:
+              filename = 'downloaded_file'
 
           print(f'שומר את הקובץ בשם: {filename}')
           print(f'גודל: {len(response.content)} בייטים')
 
           with open(filename, 'wb') as f:
               f.write(response.content)
-          "
+          PY
 
-      - name: דחיסת הקובץ לתוך ZIP 🗜️
+      - name: יצירת ZIP איכותי 🗜️
         run: |
           python - <<'PY'
-          import glob
+          from pathlib import Path
           import zipfile
-          import os
 
-          excluded = {
-              '.github',
-              'compressed_archive.zip'
-          }
-
+          archive = Path('downloaded-file.zip')
           files = [
-              f for f in glob.glob('*')
-              if f not in excluded and os.path.isfile(f)
+              p for p in Path('.').iterdir()
+              if p.is_file() and p.name not in {archive.name}
           ]
 
           if not files:
               raise SystemExit('לא נמצא קובץ לדחיסה')
 
-          target = max(files, key=os.path.getsize)
-
-          print(f'דוחס את הקובץ: {target}')
+          target = max(files, key=lambda p: p.stat().st_size)
+          print(f'דוחס: {target.name} ({target.stat().st_size:,} bytes)')
 
           with zipfile.ZipFile(
-              'compressed_archive.zip',
+              archive,
               'w',
-              zipfile.ZIP_DEFLATED
+              compression=zipfile.ZIP_DEFLATED,
+              compresslevel=9
           ) as zf:
-              zf.write(target, arcname=os.path.basename(target))
+              zf.write(target, arcname=target.name)
+
+          # Verify the ZIP before publishing it.
+          with zipfile.ZipFile(archive, 'r') as zf:
+              bad_file = zf.testzip()
+              if bad_file:
+                  raise SystemExit(f'ZIP verification failed: {bad_file}')
+              print(f'ZIP תקין: {archive.stat().st_size:,} bytes')
           PY
 
       - name: העלאת הארטיפקט 🚀
         uses: actions/upload-artifact@v4
         with:
-          name: my-downloaded-artifact
-          path: compressed_archive.zip
+          name: downloaded-file
+          path: downloaded-file.zip
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: פרסום ZIP כ-GitHub Release 📦
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: download-${{ github.run_id }}-${{ github.run_attempt }}
+          name: Download ${{ github.run_number }}
+          body: |
+            קובץ שהורד ונארז אוטומטית על ידי GitHub Actions.
+
+            - Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          files: downloaded-file.zip
+          fail_on_unmatched_files: true
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
