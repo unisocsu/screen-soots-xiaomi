@@ -65,6 +65,7 @@ jobs:
                       'Authorization': f'Bearer {token}',
                       'Accept': 'application/vnd.github+json',
                       'X-GitHub-Api-Version': '2022-11-28',
+                      'User-Agent': 'artifact-downloader',
                   },
                   allow_redirects=False,
                   timeout=120
@@ -75,8 +76,9 @@ jobs:
                   response = requests.get(url, impersonate='chrome', timeout=120)
               else:
                   response = r
-              if response.status_code == 404:
-                  print('404: הארטיפקט לא נמצא, פג תוקף, או שהמאגר פרטי. במקרה כזה הגדר secret בשם ARTIFACT_TOKEN.')
+              if response.status_code >= 400:
+                  print(f'שגיאה {response.status_code} מה-API: {response.text[:300]}')
+                  print('אם זה 403/404: הגדר secret בשם ARTIFACT_TOKEN (טוקן אישי עם Actions: Read על המאגר המקורי).')
           else:
               response = requests.get(
                   url,
